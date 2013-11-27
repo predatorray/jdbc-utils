@@ -11,7 +11,7 @@ public class LoadBalancingDataSource extends AbstractDataSource {
     private final DataSource[] dataSources;
     private final int maxBorder;
 
-    public LoadBalancingDataSource(Map<DataSource,
+    public LoadBalancingDataSource(Map<? extends DataSource,
             Integer> dataSourcesWeightMap) {
         Check.argumentIsNotNull(dataSourcesWeightMap,
                 "dataSourcesWeight should not be null");
@@ -21,7 +21,7 @@ public class LoadBalancingDataSource extends AbstractDataSource {
 
         int borderValue = 0;
         int index = 0;
-        for (Map.Entry<DataSource, Integer> dataSourceWeight :
+        for (Map.Entry<? extends DataSource, Integer> dataSourceWeight :
                 dataSourcesWeightMap.entrySet()) {
             int weight = dataSourceWeight.getValue();
             Check.argumentIsValid(weight > 0, String.format("Weight [%d]" +

@@ -3,6 +3,7 @@ package me.predatorray.jdbc;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 
 public abstract class AbstractDataSource implements DataSource {
 
@@ -33,15 +34,19 @@ public abstract class AbstractDataSource implements DataSource {
     @SuppressWarnings("unchecked")
     public <T> T unwrap(Class<T> iface) throws SQLException {
         Check.argumentIsNotNull(iface, "Argument iface cannot be null.");
-        if (getClass().equals(iface)) {
-            throw new SQLException(String.format("no object found that " +
-                    "implements the interface [%s]", iface));
+        if (iface.isInstance(this)) {
+            return (T) this;
         }
-        return (T) this;
+        throw new SQLException(String.format("no object found that " +
+                "implements the interface [%s]", iface));
     }
 
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         return DataSource.class.equals(iface);
+    }
+
+    public Logger getParentLogger() {
+        return Logger.getGlobal();
     }
 }

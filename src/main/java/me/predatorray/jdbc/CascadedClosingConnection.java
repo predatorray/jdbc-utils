@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 public class CascadedClosingConnection extends ConnectionWrapper {
 
@@ -146,7 +147,32 @@ public class CascadedClosingConnection extends ConnectionWrapper {
         cascadedStatements.add(preparedStatement);
         return preparedStatement;
     }
-    
+
+    @Override
+    public void setSchema(String schema) throws SQLException {
+        originalConnection.setSchema(schema);
+    }
+
+    @Override
+    public String getSchema() throws SQLException {
+        return originalConnection.getSchema();
+    }
+
+    @Override
+    public void abort(Executor executor) throws SQLException {
+        originalConnection.abort(executor);
+    }
+
+    @Override
+    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+        originalConnection.setNetworkTimeout(executor, milliseconds);
+    }
+
+    @Override
+    public int getNetworkTimeout() throws SQLException {
+        return originalConnection.getNetworkTimeout();
+    }
+
     @Override
     protected void finalize() {
         try {
