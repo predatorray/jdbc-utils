@@ -36,6 +36,19 @@ public class LoadBalancingDataSource extends AbstractDataSource {
         }
         maxBorder = borderValue;
     }
+
+    public LoadBalancingDataSource(
+            Collection<? extends DataSource> dataSourceCollection) {
+        final int listSize = dataSourceCollection.size();
+        normalizedBorderValue = null;
+        dataSources = new DataSource[listSize];
+        int i = 0;
+        for (DataSource dataSource : dataSourceCollection) {
+            dataSources[i] = dataSource;
+            ++i;
+        }
+        maxBorder = listSize;
+    }
     
     @Override
     public Connection getConnection() throws SQLException {
@@ -50,6 +63,10 @@ public class LoadBalancingDataSource extends AbstractDataSource {
 
     private DataSource getDataSourceRandomly() {
         int randomBorder = new Random().nextInt() % maxBorder;
+        if (normalizedBorderValue == null) { // average
+            return dataSources[randomBorder];
+        }
+
         for (int i = 0; i < normalizedBorderValue.length; ++i) {
             int borderValue = normalizedBorderValue[i];
             if (randomBorder < borderValue) {

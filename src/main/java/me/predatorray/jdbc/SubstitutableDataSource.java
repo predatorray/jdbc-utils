@@ -3,14 +3,25 @@ package me.predatorray.jdbc;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Copyright (c) 2013 Ray <predator.ray@gmail.com>
  */
 public class SubstitutableDataSource extends AbstractDataSource {
 
-    private DataSource dataSource;
+    private final DataSource dataSource;
     private DataSource substitution;
+    private boolean infiniteLoopDetectionEnabled = true;
+    private ThreadLocal<Set<SubstitutableDataSource>> dataSourceErrorSet =
+            new ThreadLocal<Set<SubstitutableDataSource>>() {
+                @Override
+                protected Set<SubstitutableDataSource> initialValue() {
+                    return new HashSet<SubstitutableDataSource>();
+                }
+            };
 
     public SubstitutableDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
@@ -20,16 +31,23 @@ public class SubstitutableDataSource extends AbstractDataSource {
         this.substitution = substitution;
     }
 
+    public void setInfiniteLoopDetectionEnabled(
+            boolean infiniteLoopDetectionEnabled) {
+        this.infiniteLoopDetectionEnabled = infiniteLoopDetectionEnabled;
+    }
+
+    public boolean isInfiniteLoopDetectionEnabled() {
+        return infiniteLoopDetectionEnabled;
+    }
+
     @Override
     public Connection getConnection() throws SQLException {
-        // TODO prevent a infinite loop
         try {
-            return dataSource.getConnection();
+            Connection conn = dataSource.getConnection();
+            afterConnectionReturned();
+            return conn;
         } catch (SQLException ex) {
-            if (substitution == null) {
-                throw ex;
-            }
-            ex.printStackTrace();
+            afterExceptionOccurred(ex);
             return substitution.getConnection();
         }
     }
@@ -37,15 +55,30 @@ public class SubstitutableDataSource extends AbstractDataSource {
     @Override
     public Connection getConnection(String username, String password)
             throws SQLException {
-        // TODO prevent a infinite loop
         try {
-            return dataSource.getConnection(username, password);
+            Connection conn = dataSource.getConnection(username, password);
+            afterConnectionReturned();
+            return conn;
         } catch (SQLException ex) {
-            if (substitution == null) {
-                throw ex;
-            }
-            ex.printStackTrace();
+            afterExceptionOccurred(ex);
             return substitution.getConnection(username, password);
         }
+    }
+
+    private void afterConnectionReturned() {
+        if (infiniteLoopDetectionEnabled) {
+            dataSourceErrorSet.get().clear();
+        }
+    }
+
+    private void afterExceptionOccurred(SQLException ex) throws SQLException {
+        if (substitution == null
+                || dataSourceErrorSet.get().contains(this)) {
+            throw ex;
+        }
+        if (infiniteLoopDetectionEnabled) {
+            dataSourceErrorSet.get().add(this);
+        }
+        ex.printStackTrace();
     }
 }

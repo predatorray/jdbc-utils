@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-public class CascadedClosingConnection extends ConnectionWrapper {
+public class CascadedClosingConnection extends ConnectionProxy {
 
     private final Connection originalConnection;
     private final List<Statement> cascadedStatements;
@@ -164,7 +164,8 @@ public class CascadedClosingConnection extends ConnectionWrapper {
     }
 
     @Override
-    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+    public void setNetworkTimeout(Executor executor, int milliseconds)
+            throws SQLException {
         originalConnection.setNetworkTimeout(executor, milliseconds);
     }
 

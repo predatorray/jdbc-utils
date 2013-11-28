@@ -46,7 +46,8 @@ public abstract class AbstractDataSource implements DataSource {
         return DataSource.class.equals(iface);
     }
 
+    @Override
     public Logger getParentLogger() {
-        return Logger.getGlobal();
+        return Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     }
 }
