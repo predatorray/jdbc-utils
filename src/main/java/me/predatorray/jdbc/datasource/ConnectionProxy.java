@@ -1,143 +1,129 @@
-package me.predatorray.jdbc;
+package me.predatorray.jdbc.datasource;
 
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-class ReadWriteSplitConnection implements Connection {
+public abstract class ConnectionProxy implements Connection {
 
-    private Connection currentConn;
-    private final Connection readWriteConn;
-    private final Connection readOnlyConn;
+    private final Connection original;
 
-    public ReadWriteSplitConnection(Connection readWriteConn,
-                                    Connection readOnlyConn) {
-        Check.argumentIsNotNull(readWriteConn, "connection cannot be null");
-        Check.argumentIsNotNull(readOnlyConn, "connection cannot be null");
+    public ConnectionProxy(Connection original) {
+        this.original = original;
+    }
 
-        this.readWriteConn = readWriteConn;
-        this.readOnlyConn = readOnlyConn;
-        currentConn = this.readWriteConn;
+    protected Connection getOriginal() {
+        return original;
     }
 
     @Override
     public Statement createStatement() throws SQLException {
-        return currentConn.createStatement();
+        return original.createStatement();
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
-        return currentConn.prepareStatement(sql);
+        return original.prepareStatement(sql);
     }
 
     @Override
     public CallableStatement prepareCall(String sql) throws SQLException {
-        return currentConn.prepareCall(sql);
+        return original.prepareCall(sql);
     }
 
     @Override
     public String nativeSQL(String sql) throws SQLException {
-        return currentConn.nativeSQL(sql);
+        return original.nativeSQL(sql);
     }
 
     @Override
     public void setAutoCommit(boolean autoCommit) throws SQLException {
-        currentConn.setAutoCommit(autoCommit);
+        original.setAutoCommit(autoCommit);
     }
 
     @Override
     public boolean getAutoCommit() throws SQLException {
-        return currentConn.getAutoCommit();
+        return original.getAutoCommit();
     }
 
     @Override
     public void commit() throws SQLException {
-        currentConn.commit();
+        original.commit();
     }
 
     @Override
     public void rollback() throws SQLException {
-        currentConn.rollback();
+        original.rollback();
     }
 
     @Override
     public void close() throws SQLException {
-        readWriteConn.close();
-        readOnlyConn.close();
+        original.close();
     }
 
     @Override
     public boolean isClosed() throws SQLException {
-        return currentConn.isClosed();
+        return original.isClosed();
     }
 
     @Override
     public DatabaseMetaData getMetaData() throws SQLException {
-        return currentConn.getMetaData();
+        return original.getMetaData();
     }
 
     @Override
     public void setReadOnly(boolean readOnly) throws SQLException {
-        if (readOnly) {
-            if (currentConn != readOnlyConn) {
-                currentConn = readOnlyConn;
-            }
-        } else {
-            if (currentConn != readWriteConn) {
-                currentConn = readWriteConn;
-            }
-        }
-        currentConn.setReadOnly(readOnly);
+        original.setReadOnly(readOnly);
     }
 
     @Override
     public boolean isReadOnly() throws SQLException {
-        return currentConn.isReadOnly();
+        return original.isReadOnly();
     }
 
     @Override
     public void setCatalog(String catalog) throws SQLException {
-        currentConn.setCatalog(catalog);
+        original.setCatalog(catalog);
     }
 
     @Override
     public String getCatalog() throws SQLException {
-        return currentConn.getCatalog();
+        return original.getCatalog();
     }
 
     @Override
     public void setTransactionIsolation(int level) throws SQLException {
-        currentConn.setTransactionIsolation(level);
+        original.setTransactionIsolation(level);
     }
 
     @Override
     public int getTransactionIsolation() throws SQLException {
-        return currentConn.getTransactionIsolation();
+        return original.getTransactionIsolation();
     }
 
     @Override
     public SQLWarning getWarnings() throws SQLException {
-        return currentConn.getWarnings();
+        return original.getWarnings();
     }
 
     @Override
     public void clearWarnings() throws SQLException {
-        currentConn.clearWarnings();
+        original.clearWarnings();
     }
 
     @Override
     public Statement createStatement(int resultSetType,
                                      int resultSetConcurrency)
             throws SQLException {
-        return currentConn.createStatement(resultSetType, resultSetConcurrency);
+        return original.createStatement(resultSetType, resultSetConcurrency);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, int resultSetType,
                                               int resultSetConcurrency)
             throws SQLException {
-        return currentConn.prepareStatement(sql, resultSetType,
+        return original.prepareStatement(sql, resultSetType,
                 resultSetConcurrency);
     }
 
@@ -145,48 +131,47 @@ class ReadWriteSplitConnection implements Connection {
     public CallableStatement prepareCall(String sql, int resultSetType,
                                          int resultSetConcurrency)
             throws SQLException {
-        return currentConn.prepareCall(sql, resultSetType,
-                resultSetConcurrency);
+        return original.prepareCall(sql, resultSetType, resultSetConcurrency);
     }
 
     @Override
     public Map<String, Class<?>> getTypeMap() throws SQLException {
-        return currentConn.getTypeMap();
+        return original.getTypeMap();
     }
 
     @Override
     public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
-        currentConn.setTypeMap(map);
+        original.setTypeMap(map);
     }
 
     @Override
     public void setHoldability(int holdability) throws SQLException {
-        currentConn.setHoldability(holdability);
+        original.setHoldability(holdability);
     }
 
     @Override
     public int getHoldability() throws SQLException {
-        return currentConn.getHoldability();
+        return original.getHoldability();
     }
 
     @Override
     public Savepoint setSavepoint() throws SQLException {
-        return currentConn.setSavepoint();
+        return original.setSavepoint();
     }
 
     @Override
     public Savepoint setSavepoint(String name) throws SQLException {
-        return currentConn.setSavepoint(name);
+        return original.setSavepoint(name);
     }
 
     @Override
     public void rollback(Savepoint savepoint) throws SQLException {
-        currentConn.rollback();
+        original.rollback();
     }
 
     @Override
     public void releaseSavepoint(Savepoint savepoint) throws SQLException {
-        currentConn.releaseSavepoint(savepoint);
+        original.releaseSavepoint(savepoint);
     }
 
     @Override
@@ -194,7 +179,7 @@ class ReadWriteSplitConnection implements Connection {
                                      int resultSetConcurrency,
                                      int resultSetHoldability)
             throws SQLException {
-        return currentConn.createStatement(resultSetType, resultSetConcurrency,
+        return original.createStatement(resultSetType, resultSetConcurrency,
                 resultSetHoldability);
     }
 
@@ -203,7 +188,7 @@ class ReadWriteSplitConnection implements Connection {
                                               int resultSetConcurrency,
                                               int resultSetHoldability)
             throws SQLException {
-        return currentConn.prepareStatement(sql, resultSetType,
+        return original.prepareStatement(sql, resultSetType,
                 resultSetConcurrency, resultSetHoldability);
     }
 
@@ -212,121 +197,120 @@ class ReadWriteSplitConnection implements Connection {
                                          int resultSetConcurrency,
                                          int resultSetHoldability)
             throws SQLException {
-        return currentConn.prepareCall(sql, resultSetType, resultSetConcurrency,
+        return original.prepareCall(sql, resultSetType, resultSetConcurrency,
                 resultSetHoldability);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys)
             throws SQLException {
-        return currentConn.prepareStatement(sql, autoGeneratedKeys);
+        return original.prepareStatement(sql, autoGeneratedKeys);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, int[] columnIndexes)
             throws SQLException {
-        return currentConn.prepareStatement(sql, columnIndexes);
+        return original.prepareStatement(sql, columnIndexes);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, String[] columnNames)
             throws SQLException {
-        return currentConn.prepareStatement(sql, columnNames);
+        return original.prepareStatement(sql, columnNames);
     }
 
     @Override
     public Clob createClob() throws SQLException {
-        return currentConn.createClob();
+        return original.createClob();
     }
 
     @Override
     public Blob createBlob() throws SQLException {
-        return currentConn.createBlob();
+        return original.createBlob();
     }
 
     @Override
     public NClob createNClob() throws SQLException {
-        return currentConn.createNClob();
+        return original.createNClob();
     }
 
     @Override
     public SQLXML createSQLXML() throws SQLException {
-        return currentConn.createSQLXML();
+        return original.createSQLXML();
     }
 
     @Override
     public boolean isValid(int timeout) throws SQLException {
-        return currentConn.isValid(timeout);
+        return original.isValid(timeout);
     }
 
     @Override
     public void setClientInfo(String name, String value)
             throws SQLClientInfoException {
-        currentConn.setClientInfo(name, value);
+        original.setClientInfo(name, value);
     }
 
     @Override
     public void setClientInfo(Properties properties)
             throws SQLClientInfoException {
-        currentConn.setClientInfo(properties);
+        original.setClientInfo(properties);
     }
 
     @Override
     public String getClientInfo(String name) throws SQLException {
-        return currentConn.getClientInfo(name);
+        return original.getClientInfo(name);
     }
 
     @Override
     public Properties getClientInfo() throws SQLException {
-        return currentConn.getClientInfo();
+        return original.getClientInfo();
     }
 
     @Override
     public Array createArrayOf(String typeName, Object[] elements)
             throws SQLException {
-        return currentConn.createArrayOf(typeName, elements);
+        return original.createArrayOf(typeName, elements);
     }
 
     @Override
     public Struct createStruct(String typeName, Object[] attributes)
             throws SQLException {
-        return currentConn.createStruct(typeName, attributes);
+        return original.createStruct(typeName, attributes);
     }
 
     @Override
     public void setSchema(String schema) throws SQLException {
-        currentConn.setSchema(schema);
+        original.setSchema(schema);
     }
 
     @Override
     public String getSchema() throws SQLException {
-        return currentConn.getSchema();
+        return original.getSchema();
     }
 
     @Override
     public void abort(Executor executor) throws SQLException {
-        currentConn.abort(executor);
+        original.abort(executor);
     }
 
     @Override
-    public void setNetworkTimeout(Executor executor, int milliseconds)
-            throws SQLException {
-        currentConn.setNetworkTimeout(executor, milliseconds);
+    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+        original.setNetworkTimeout(executor, milliseconds);
     }
 
     @Override
     public int getNetworkTimeout() throws SQLException {
-        return currentConn.getNetworkTimeout();
+        return original.getNetworkTimeout();
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T unwrap(Class<T> iface) throws SQLException {
-        return (T) currentConn;
+        return (T) original;
     }
 
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return currentConn.isWrapperFor(iface);
+        return original.isWrapperFor(iface);
     }
 }

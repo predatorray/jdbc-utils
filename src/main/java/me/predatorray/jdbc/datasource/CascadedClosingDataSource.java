@@ -1,4 +1,4 @@
-package me.predatorray.jdbc;
+package me.predatorray.jdbc.datasource;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

@@ -1,4 +1,6 @@
-package me.predatorray.jdbc;
+package me.predatorray.jdbc.datasource;
+
+import me.predatorray.jdbc.Check;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;

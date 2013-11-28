@@ -1,4 +1,4 @@
-package me.predatorray.jdbc;
+package me.predatorray.jdbc.datasource;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -21,11 +21,12 @@ public class MasterSlaveDataSource extends AbstractDataSource {
 
         // each node is the substitution for another according to the list
         // order
-        new SubstitutableDataSourceCycle(masterAndSlaves);
+        Collection<SubstitutableDataSource> substitutableDataSources =
+                new SubstitutableDataSourceCycle(masterAndSlaves);
 
         // round-robin replicas
         RoundRobinDataSource roundRobinReads =
-                new RoundRobinDataSource(masterAndSlaves);
+                new RoundRobinDataSource(substitutableDataSources);
         // split read (master) and write (replicas)
         masterSlaveDataSource = new ReadWriteSplitDataSource(master,
                 roundRobinReads);

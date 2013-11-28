@@ -1,11 +1,10 @@
-package me.predatorray.jdbc;
+package me.predatorray.jdbc.datasource;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Copyright (c) 2013 Ray <predator.ray@gmail.com>
