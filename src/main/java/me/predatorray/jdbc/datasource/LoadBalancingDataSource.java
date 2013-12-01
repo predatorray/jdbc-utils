@@ -12,6 +12,7 @@ public class LoadBalancingDataSource extends AbstractDataSource {
     private final int[] normalizedBorderValue;
     private final DataSource[] dataSources;
     private final int maxBorder;
+    private RandomGenerator randomGenerator = new DefaultRandomGenerator();
 
     public LoadBalancingDataSource(Map<? extends DataSource,
             Integer> dataSourcesWeightMap) {
@@ -51,6 +52,10 @@ public class LoadBalancingDataSource extends AbstractDataSource {
         }
         maxBorder = listSize;
     }
+
+    public void setRandomGenerator(RandomGenerator randomGenerator) {
+        this.randomGenerator = randomGenerator;
+    }
     
     @Override
     public Connection getConnection() throws SQLException {
@@ -64,7 +69,7 @@ public class LoadBalancingDataSource extends AbstractDataSource {
     }
 
     private DataSource getDataSourceRandomly() {
-        int randomBorder = new Random().nextInt() % maxBorder;
+        int randomBorder = randomGenerator.nextInt() % maxBorder;
         if (normalizedBorderValue == null) { // average
             return dataSources[randomBorder];
         }
@@ -76,5 +81,15 @@ public class LoadBalancingDataSource extends AbstractDataSource {
             }
         }
         return dataSources[0];
+    }
+
+    private static class DefaultRandomGenerator implements RandomGenerator {
+
+        private Random random = new Random();
+
+        @Override
+        public int nextInt() {
+            return random.nextInt();
+        }
     }
 }

@@ -6,12 +6,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
-public class CascadedClosingConnection extends ConnectionProxy {
+public class CloseOnCompletionConnection extends ConnectionProxy {
 
     private final Connection originalConnection;
     private final List<Statement> cascadedStatements;
 
-    public CascadedClosingConnection(Connection originalConnection) {
+    public CloseOnCompletionConnection(Connection originalConnection) {
         super(originalConnection);
         this.originalConnection = originalConnection;
         cascadedStatements = Collections.synchronizedList(
@@ -175,13 +175,13 @@ public class CascadedClosingConnection extends ConnectionProxy {
     }
 
     @Override
-    protected void finalize() {
+    protected void finalize() throws Throwable {
         try {
             if (!isClosed()) {
                 this.close();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            super.finalize();
         }
     }
 }

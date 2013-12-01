@@ -1,12 +1,10 @@
 package me.predatorray.jdbc;
 
-import me.predatorray.jdbc.datasource.CascadedClosingConnection;
+import me.predatorray.jdbc.datasource.CloseOnCompletionConnection;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -57,10 +55,7 @@ public class JdbcTemplate {
             fillInParameters(ps, parameters);
 
             ResultSet rs = ps.executeQuery();
-            if (!rs.next()) {
-                return null;
-            }
-            return dataMapper.map(rs);
+            return (rs.next()) ? dataMapper.map(rs) : null;
         } catch (SQLException ex) {
             throw new DataAccessException(ex);
         } finally {
@@ -85,6 +80,69 @@ public class JdbcTemplate {
         }
     }
 
+    public <K> List<K> update(String sql, List<Object> parameters,
+                              DataMapper<K> keyMapper)
+            throws DataAccessException {
+        Connection connection = getConnection();
+        try {
+            connection.setReadOnly(false);
+
+            PreparedStatement ps = connection.prepareStatement(sql,
+                    Statement.RETURN_GENERATED_KEYS);
+            fillInParameters(ps, parameters);
+
+            int row = ps.executeUpdate();
+            List<K> keyList = new ArrayList<K>(row);
+
+            ResultSet rs = ps.getGeneratedKeys();
+            while (rs.next()) {
+                K key = keyMapper.map(rs);
+                keyList.add(key);
+            }
+            return keyList;
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex);
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
+    public <K> K updateOne(String sql, List<Object> parameters,
+                           DataMapper<K> keyMapper)
+            throws DataAccessException {
+        Connection connection = getConnection();
+        try {
+            connection.setReadOnly(false);
+
+            PreparedStatement ps = connection.prepareStatement(sql,
+                    Statement.RETURN_GENERATED_KEYS);
+            fillInParameters(ps, parameters);
+
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+            return (rs.next()) ? keyMapper.map(rs) : null;
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex);
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
+    public BatchUpdater batchUpdater(String sql) {
+        Connection connection = getConnection();
+        try {
+            connection.setReadOnly(false);
+
+            PreparedStatement ps = connection.prepareStatement(sql);
+            return new BatchUpdater(ps);
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex);
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
     private void fillInParameters(PreparedStatement ps,
                                   List<Object> paramList) throws SQLException {
         ParameterList parameterList = new ParameterList(paramList);
@@ -96,7 +154,7 @@ public class JdbcTemplate {
         try {
             Connection connection = dataSource.getConnection();
             connection.setAutoCommit(true);
-            return new CascadedClosingConnection(connection);
+            return new CloseOnCompletionConnection(connection);
         } catch (SQLException ex) {
             throw new DataAccessException(
                     "failed to get a connection from the data source", ex);
