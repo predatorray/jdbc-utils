@@ -1,5 +1,7 @@
 package me.predatorray.jdbc.datasource;
 
+import me.predatorray.jdbc.Check;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -11,6 +13,8 @@ public class ReadWriteSplitDataSource extends AbstractDataSource {
 
     public ReadWriteSplitDataSource(DataSource readWriteDs,
                                     DataSource readOnlyDs) {
+        Check.argumentIsNotNull(readWriteDs, "readWriteDs cannot be null");
+        Check.argumentIsNotNull(readOnlyDs, "readOnlyDs cannot be null");
         this.readWriteDs = readWriteDs;
         this.readOnlyDs = readOnlyDs;
     }

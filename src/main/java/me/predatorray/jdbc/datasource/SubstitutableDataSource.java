@@ -1,5 +1,7 @@
 package me.predatorray.jdbc.datasource;
 
+import me.predatorray.jdbc.Check;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -14,6 +16,7 @@ public class SubstitutableDataSource extends AbstractDataSource {
     private final DataSource dataSource;
     private DataSource substitution;
     private boolean infiniteLoopDetectionEnabled = true;
+    private boolean exceptionOmitted = true;
     private ThreadLocal<Set<SubstitutableDataSource>> dataSourceErrorSet =
             new ThreadLocal<Set<SubstitutableDataSource>>() {
                 @Override
@@ -23,6 +26,7 @@ public class SubstitutableDataSource extends AbstractDataSource {
             };
 
     public SubstitutableDataSource(DataSource dataSource) {
+        Check.argumentIsNotNull(dataSource, "dataSource cannot be null");
         this.dataSource = dataSource;
     }
 
@@ -37,6 +41,14 @@ public class SubstitutableDataSource extends AbstractDataSource {
 
     public boolean isInfiniteLoopDetectionEnabled() {
         return infiniteLoopDetectionEnabled;
+    }
+
+    public boolean isExceptionOmitted() {
+        return exceptionOmitted;
+    }
+
+    public void setExceptionOmitted(boolean exceptionOmitted) {
+        this.exceptionOmitted = exceptionOmitted;
     }
 
     @Override
@@ -78,6 +90,8 @@ public class SubstitutableDataSource extends AbstractDataSource {
         if (infiniteLoopDetectionEnabled) {
             dataSourceErrorSet.get().add(this);
         }
-        ex.printStackTrace();
+        if (!exceptionOmitted) {
+            ex.printStackTrace();
+        }
     }
 }

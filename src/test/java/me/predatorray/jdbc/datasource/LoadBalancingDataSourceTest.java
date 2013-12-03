@@ -54,6 +54,7 @@ public class LoadBalancingDataSourceTest {
         final DataSource ds2 = mock(DataSource.class);
         LoadBalancingDataSource lDs = new LoadBalancingDataSource(
                 new HashMap<DataSource, Integer>(2) {
+
                     {
                         this.put(ds1, 1);
                         this.put(ds2, 2);

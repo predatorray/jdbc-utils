@@ -13,10 +13,20 @@ public class BatchUpdater {
     }
 
     public BatchUpdater addBatch(List<Object> parameters) throws SQLException {
+        Check.argumentIsNotNull(parameters, "parameters cannot be null");
+
         ps.clearParameters();
-        ParameterList parameterList = new ParameterList(parameters);
-        ParameterVisitor visitor = new ParameterVisitor(ps);
-        parameterList.accept(visitor);
+        PreparedStatementSetter setter =
+                new SimplePreparedStatementSetter(parameters);
+        return addBatch(setter);
+    }
+
+    public BatchUpdater addBatch(PreparedStatementSetter setter)
+            throws SQLException {
+        Check.argumentIsNotNull(setter, "setter cannot be null");
+
+        ps.clearParameters();
+        setter.setPreparedStatement(ps);
         ps.addBatch();
         return this;
     }

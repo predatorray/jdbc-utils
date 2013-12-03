@@ -3,7 +3,6 @@ package me.predatorray.jdbc.datasource;
 import static org.mockito.Mockito.*;
 
 import org.junit.Test;
-import org.mockito.InOrder;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;

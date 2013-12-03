@@ -12,12 +12,12 @@ public class MasterSlaveDataSource extends AbstractDataSource {
 
     public MasterSlaveDataSource(DataSource master,
                                  Collection<? extends DataSource>
-                                         dataSources) {
+                                         slaves) {
         // join all data sources as read replicas
         Collection<DataSource> masterAndSlaves = new
-                ArrayList<DataSource>(dataSources.size() + 1);
+                ArrayList<DataSource>(slaves.size() + 1);
         masterAndSlaves.add(master);
-        masterAndSlaves.addAll(dataSources);
+        masterAndSlaves.addAll(slaves);
 
         // each node is the substitution for another according to the list
         // order

@@ -1,5 +1,7 @@
 package me.predatorray.jdbc.datasource;
 
+import me.predatorray.jdbc.Check;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -9,6 +11,7 @@ public class CloseOnCompletionDataSource extends AbstractDataSource {
     private DataSource dataSource;
 
     public CloseOnCompletionDataSource(DataSource dataSource) {
+        Check.argumentIsNotNull(dataSource, "dataSource cannot be null");
         this.dataSource = dataSource;
     }
 

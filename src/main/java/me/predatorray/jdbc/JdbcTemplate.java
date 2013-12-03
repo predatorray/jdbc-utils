@@ -13,7 +13,14 @@ public class JdbcTemplate {
     private final DataSource dataSource;
 
     public JdbcTemplate(DataSource dataSource) {
+        Check.argumentIsNotNull(dataSource, "dataSource cannot be null");
         this.dataSource = dataSource;
+    }
+
+    public <E> List<E> query(String sql, PreparedStatementSetter setter,
+                             DataMapper<E> dataMapper)
+            throws DataAccessException {
+        return query(sql, setter, dataMapper, new LinkedList<E>());
     }
 
     public <E> List<E> query(String sql, List<Object> parameters,
@@ -25,10 +32,23 @@ public class JdbcTemplate {
     public <E> List<E> query(String sql, List<Object> parameters,
                              DataMapper<E> dataMapper, List<E> resultList)
             throws DataAccessException {
+        Check.argumentIsNotNull(parameters, "parameters cannot be null");
+
+        PreparedStatementSetter setter = new SimplePreparedStatementSetter(
+                parameters);
+        return query(sql, setter, dataMapper, resultList);
+    }
+
+    public <E> List<E> query(String sql, PreparedStatementSetter setter,
+                             DataMapper<E> dataMapper, List<E> resultList)
+            throws DataAccessException {
+        Check.argumentIsNotNull(setter, "setter cannot be null");
+        Check.argumentIsNotNull(dataMapper, "dataMapper cannot be null");
+
         Connection connection = getConnection();
         try {
             PreparedStatement ps = connection.prepareStatement(sql);
-            fillInParameters(ps, parameters);
+            setter.setPreparedStatement(ps);
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -47,12 +67,25 @@ public class JdbcTemplate {
     public <E> E queryOne(String sql, List<Object> parameters,
                           DataMapper<E> dataMapper)
             throws DataAccessException {
+        Check.argumentIsNotNull(parameters, "parameters cannot be null");
+
+        PreparedStatementSetter setter = new SimplePreparedStatementSetter(
+                parameters);
+        return queryOne(sql, setter,dataMapper);
+    }
+
+    public <E> E queryOne(String sql, PreparedStatementSetter setter,
+                          DataMapper<E> dataMapper)
+            throws DataAccessException {
+        Check.argumentIsNotNull(setter, "setter cannot be null");
+        Check.argumentIsNotNull(dataMapper, "dataMapper cannot be null");
+
         Connection connection = getConnection();
         try {
             connection.setReadOnly(true);
 
             PreparedStatement ps = connection.prepareStatement(sql);
-            fillInParameters(ps, parameters);
+            setter.setPreparedStatement(ps);
 
             ResultSet rs = ps.executeQuery();
             return (rs.next()) ? dataMapper.map(rs) : null;
@@ -65,12 +98,23 @@ public class JdbcTemplate {
 
     public int update(String sql, List<Object> parameters)
             throws DataAccessException {
+        Check.argumentIsNotNull(parameters, "parameters cannot be null");
+
+        PreparedStatementSetter setter = new SimplePreparedStatementSetter(
+                parameters);
+        return update(sql, setter);
+    }
+
+    public int update(String sql, PreparedStatementSetter setter)
+            throws DataAccessException {
+        Check.argumentIsNotNull(setter, "setter cannot be null");
+
         Connection connection = getConnection();
         try {
             connection.setReadOnly(false);
 
             PreparedStatement ps = connection.prepareStatement(sql);
-            fillInParameters(ps, parameters);
+            setter.setPreparedStatement(ps);
 
             return ps.executeUpdate();
         } catch (SQLException ex) {
@@ -83,13 +127,27 @@ public class JdbcTemplate {
     public <K> List<K> update(String sql, List<Object> parameters,
                               DataMapper<K> keyMapper)
             throws DataAccessException {
+        Check.argumentIsNotNull(parameters, "parameters cannot be null");
+        Check.argumentIsNotNull(keyMapper, "keyMapper cannot be null");
+
+        PreparedStatementSetter setter = new SimplePreparedStatementSetter(
+                parameters);
+        return update(sql, setter, keyMapper);
+    }
+
+    public <K> List<K> update(String sql, PreparedStatementSetter setter,
+                              DataMapper<K> keyMapper)
+            throws DataAccessException {
+        Check.argumentIsNotNull(setter, "setter cannot be null");
+        Check.argumentIsNotNull(keyMapper, "keyMapper cannot be null");
+
         Connection connection = getConnection();
         try {
             connection.setReadOnly(false);
 
             PreparedStatement ps = connection.prepareStatement(sql,
                     Statement.RETURN_GENERATED_KEYS);
-            fillInParameters(ps, parameters);
+            setter.setPreparedStatement(ps);
 
             int row = ps.executeUpdate();
             List<K> keyList = new ArrayList<K>(row);
@@ -110,13 +168,27 @@ public class JdbcTemplate {
     public <K> K updateOne(String sql, List<Object> parameters,
                            DataMapper<K> keyMapper)
             throws DataAccessException {
+        Check.argumentIsNotNull(parameters, "parameters cannot be null");
+        Check.argumentIsNotNull(keyMapper, "keyMapper cannot be null");
+
+        PreparedStatementSetter setter = new SimplePreparedStatementSetter(
+                parameters);
+        return updateOne(sql, setter, keyMapper);
+    }
+
+    public <K> K updateOne(String sql, PreparedStatementSetter setter,
+                           DataMapper<K> keyMapper)
+            throws DataAccessException {
+        Check.argumentIsNotNull(setter, "setter cannot be null");
+        Check.argumentIsNotNull(keyMapper, "keyMapper cannot be null");
+
         Connection connection = getConnection();
         try {
             connection.setReadOnly(false);
 
             PreparedStatement ps = connection.prepareStatement(sql,
                     Statement.RETURN_GENERATED_KEYS);
-            fillInParameters(ps, parameters);
+            setter.setPreparedStatement(ps);
 
             ps.executeUpdate();
 
@@ -141,13 +213,6 @@ public class JdbcTemplate {
         } finally {
             closeConnection(connection);
         }
-    }
-
-    private void fillInParameters(PreparedStatement ps,
-                                  List<Object> paramList) throws SQLException {
-        ParameterList parameterList = new ParameterList(paramList);
-        ParameterVisitor visitor = new ParameterVisitor(ps);
-        parameterList.accept(visitor);
     }
 
     protected Connection getConnection() {
