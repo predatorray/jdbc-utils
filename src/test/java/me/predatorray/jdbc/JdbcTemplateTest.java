@@ -39,7 +39,7 @@ public class JdbcTemplateTest {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         jdbcTemplate.query("sql", Collections.emptyList(), dataMapper);
 
-        verify(dataMapper, times(2)).map(resultSet);
+        verify(dataMapper, times(2)).map(any(ExtendedResultSet.class));
     }
 
     @Test
@@ -68,6 +68,6 @@ public class JdbcTemplateTest {
         psSetArgsOrder.verify(preparedStatement).setString(eq(2), eq("str"));
         psSetArgsOrder.verify(preparedStatement).setInt(eq(3), eq(2));
 
-        verify(dataMapper, times(2)).map(resultSet);
+        verify(dataMapper, times(2)).map(any(ExtendedResultSet.class));
     }
 }

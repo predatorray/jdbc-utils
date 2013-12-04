@@ -52,7 +52,7 @@ public class JdbcTemplate {
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                E entity = dataMapper.map(rs);
+                E entity = dataMapper.map(new ExtendedResultSetImpl(rs));
                 resultList.add(entity);
             }
 
@@ -88,7 +88,8 @@ public class JdbcTemplate {
             setter.setPreparedStatement(ps);
 
             ResultSet rs = ps.executeQuery();
-            return (rs.next()) ? dataMapper.map(rs) : null;
+            return (rs.next())
+                    ? dataMapper.map(new ExtendedResultSetImpl(rs)) : null;
         } catch (SQLException ex) {
             throw new DataAccessException(ex);
         } finally {
@@ -154,7 +155,7 @@ public class JdbcTemplate {
 
             ResultSet rs = ps.getGeneratedKeys();
             while (rs.next()) {
-                K key = keyMapper.map(rs);
+                K key = keyMapper.map(new ExtendedResultSetImpl(rs));
                 keyList.add(key);
             }
             return keyList;
@@ -193,7 +194,8 @@ public class JdbcTemplate {
             ps.executeUpdate();
 
             ResultSet rs = ps.getGeneratedKeys();
-            return (rs.next()) ? keyMapper.map(rs) : null;
+            return (rs.next())
+                    ? keyMapper.map(new ExtendedResultSetImpl(rs)) : null;
         } catch (SQLException ex) {
             throw new DataAccessException(ex);
         } finally {
