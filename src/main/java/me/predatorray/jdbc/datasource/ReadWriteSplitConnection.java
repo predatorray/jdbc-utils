@@ -83,14 +83,23 @@ class ReadWriteSplitConnection implements Connection {
     public void setReadOnly(boolean readOnly) throws SQLException {
         if (readOnly) {
             if (currentConn != readOnlyConn) {
-                currentConn = readOnlyConn;
+                switchToConnection(readOnlyConn);
             }
         } else {
             if (currentConn != readWriteConn) {
-                currentConn = readWriteConn;
+                switchToConnection(readWriteConn);
             }
         }
         currentConn.setReadOnly(readOnly);
+    }
+
+    private void switchToConnection(Connection connection)
+            throws SQLException {
+        connection.setAutoCommit(currentConn.getAutoCommit());
+        connection.setCatalog(currentConn.getCatalog());
+        connection.setTransactionIsolation(
+                currentConn.getTransactionIsolation());
+        currentConn = connection;
     }
 
     @Override

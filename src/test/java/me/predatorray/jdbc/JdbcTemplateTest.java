@@ -67,7 +67,29 @@ public class JdbcTemplateTest {
         psSetArgsOrder.verify(preparedStatement).setLong(eq(1), eq(1L));
         psSetArgsOrder.verify(preparedStatement).setString(eq(2), eq("str"));
         psSetArgsOrder.verify(preparedStatement).setInt(eq(3), eq(2));
+        psSetArgsOrder.verify(preparedStatement).executeQuery();
 
         verify(dataMapper, times(2)).map(any(ExtendedResultSet.class));
+    }
+
+    @Test
+    public void testUpdateWithDynamicSqlArgs() throws Exception {
+        PreparedStatement preparedStatement = mock(PreparedStatement.class);
+        Connection connection = mock(Connection.class);
+        DataSource dataSource = mock(DataSource.class);
+
+        when(preparedStatement.executeBatch()).thenReturn(new int[0]);
+        when(connection.prepareStatement(anyString()))
+                .thenReturn(preparedStatement);
+        when(dataSource.getConnection()).thenReturn(connection);
+
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        jdbcTemplate.update("sql", Arrays.<Object>asList(1L, "str", 2));
+
+        InOrder psSetArgsOrder = inOrder(preparedStatement);
+        psSetArgsOrder.verify(preparedStatement).setLong(eq(1), eq(1L));
+        psSetArgsOrder.verify(preparedStatement).setString(eq(2), eq("str"));
+        psSetArgsOrder.verify(preparedStatement).setInt(eq(3), eq(2));
+        psSetArgsOrder.verify(preparedStatement).executeUpdate();
     }
 }
