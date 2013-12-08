@@ -6,10 +6,10 @@ import java.util.List;
 
 public class SimplePreparedStatementSetter implements PreparedStatementSetter {
 
-    private final List<Object> argList;
+    private final List<?> argList;
     private int argIndex = 0;
 
-    public SimplePreparedStatementSetter(List<Object> argList) {
+    public SimplePreparedStatementSetter(List<?> argList) {
         this.argList = argList;
     }
 

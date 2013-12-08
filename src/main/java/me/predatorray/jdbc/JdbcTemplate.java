@@ -23,13 +23,13 @@ public class JdbcTemplate {
         return query(sql, setter, dataMapper, new LinkedList<E>());
     }
 
-    public <E> List<E> query(String sql, List<Object> parameters,
+    public <E> List<E> query(String sql, List<?> parameters,
                              DataMapper<E> dataMapper)
             throws DataAccessException {
         return query(sql, parameters, dataMapper, new LinkedList<E>());
     }
 
-    public <E> List<E> query(String sql, List<Object> parameters,
+    public <E> List<E> query(String sql, List<?> parameters,
                              DataMapper<E> dataMapper, List<E> resultList)
             throws DataAccessException {
         Check.argumentIsNotNull(parameters, "parameters cannot be null");
@@ -65,7 +65,7 @@ public class JdbcTemplate {
         }
     }
 
-    public <E> E queryOne(String sql, List<Object> parameters,
+    public <E> E queryOne(String sql, List<?> parameters,
                           DataMapper<E> dataMapper)
             throws DataAccessException {
         Check.argumentIsNotNull(parameters, "parameters cannot be null");
@@ -100,7 +100,7 @@ public class JdbcTemplate {
         }
     }
 
-    public int update(String sql, List<Object> parameters)
+    public int update(String sql, List<?> parameters)
             throws DataAccessException {
         Check.argumentIsNotNull(parameters, "parameters cannot be null");
 
@@ -128,7 +128,7 @@ public class JdbcTemplate {
         }
     }
 
-    public <K> List<K> update(String sql, List<Object> parameters,
+    public <K> List<K> update(String sql, List<?> parameters,
                               DataMapper<K> keyMapper)
             throws DataAccessException {
         Check.argumentIsNotNull(parameters, "parameters cannot be null");
@@ -170,7 +170,7 @@ public class JdbcTemplate {
         }
     }
 
-    public <K> K updateOne(String sql, List<Object> parameters,
+    public <K> K updateOne(String sql, List<?> parameters,
                            DataMapper<K> keyMapper)
             throws DataAccessException {
         Check.argumentIsNotNull(parameters, "parameters cannot be null");
