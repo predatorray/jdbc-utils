@@ -6,25 +6,25 @@ import org.junit.Test;
 
 import java.sql.Connection;
 
-public class ReadWriteSplitConnectionTest {
+public class ReplicationConnectionTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructWithNullMaster() {
         Connection slave = mock(Connection.class);
-        new ReadWriteSplitConnection(null, slave);
+        new ReplicationConnection(null, slave);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructWithNullSlave() {
         Connection master = mock(Connection.class);
-        new ReadWriteSplitConnection(master, null);
+        new ReplicationConnection(master, null);
     }
 
     @Test
     public void testConnectionClose() throws Exception {
         Connection master = mock(Connection.class);
         Connection slave = mock(Connection.class);
-        ReadWriteSplitConnection rwConn = new ReadWriteSplitConnection(
+        ReplicationConnection rwConn = new ReplicationConnection(
                 master, slave);
         rwConn.close();
 
@@ -36,7 +36,7 @@ public class ReadWriteSplitConnectionTest {
     public void testMasterConnection() throws Exception {
         Connection master = mock(Connection.class);
         Connection slave = mock(Connection.class);
-        ReadWriteSplitConnection rwConn = new ReadWriteSplitConnection(
+        ReplicationConnection rwConn = new ReplicationConnection(
                 master, slave);
         rwConn.setReadOnly(false);
         rwConn.prepareStatement("sql");
@@ -49,7 +49,7 @@ public class ReadWriteSplitConnectionTest {
     public void testSlaveConnection() throws Exception {
         Connection master = mock(Connection.class);
         Connection slave = mock(Connection.class);
-        ReadWriteSplitConnection rwConn = new ReadWriteSplitConnection(
+        ReplicationConnection rwConn = new ReplicationConnection(
                 master, slave);
         rwConn.setReadOnly(true);
         rwConn.prepareStatement("sql");

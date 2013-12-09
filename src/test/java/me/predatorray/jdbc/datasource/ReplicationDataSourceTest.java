@@ -7,18 +7,18 @@ import org.junit.Test;
 import javax.sql.DataSource;
 import java.sql.Connection;
 
-public class ReadWriteSplitDataSourceTest {
+public class ReplicationDataSourceTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorWithNullMasterDataSource() {
         DataSource slave = mock(DataSource.class);
-        new ReadWriteSplitDataSource(null, slave);
+        new ReplicationDataSource(null, slave);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorWithNullSlaveDataSource() {
         DataSource master = mock(DataSource.class);
-        new ReadWriteSplitDataSource(master, null);
+        new ReplicationDataSource(master, null);
     }
 
     @Test
@@ -28,7 +28,7 @@ public class ReadWriteSplitDataSourceTest {
         when(master.getConnection()).thenReturn(dummyConn);
         DataSource slave = mock(DataSource.class);
         when(slave.getConnection()).thenReturn(dummyConn);
-        ReadWriteSplitDataSource rwDs = new ReadWriteSplitDataSource(
+        ReplicationDataSource rwDs = new ReplicationDataSource(
                 master, slave);
         rwDs.getConnection();
         verify(master).getConnection();
@@ -44,7 +44,7 @@ public class ReadWriteSplitDataSourceTest {
         DataSource slave = mock(DataSource.class);
         when(slave.getConnection(anyString(), anyString()))
                 .thenReturn(dummyConn);
-        ReadWriteSplitDataSource rwDs = new ReadWriteSplitDataSource(
+        ReplicationDataSource rwDs = new ReplicationDataSource(
                 master, slave);
         rwDs.getConnection("u", "p");
         verify(master).getConnection(eq("u"), eq("p"));
