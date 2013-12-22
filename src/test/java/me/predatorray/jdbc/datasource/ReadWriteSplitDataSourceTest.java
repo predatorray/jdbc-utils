@@ -28,9 +28,11 @@ public class ReadWriteSplitDataSourceTest {
         when(master.getConnection()).thenReturn(dummyConn);
         DataSource slave = mock(DataSource.class);
         when(slave.getConnection()).thenReturn(dummyConn);
+
         ReadWriteSplitDataSource rwDs = new ReadWriteSplitDataSource(
                 master, slave);
         rwDs.getConnection();
+
         verify(master).getConnection();
         verify(slave).getConnection();
     }
@@ -44,9 +46,11 @@ public class ReadWriteSplitDataSourceTest {
         DataSource slave = mock(DataSource.class);
         when(slave.getConnection(anyString(), anyString()))
                 .thenReturn(dummyConn);
+
         ReadWriteSplitDataSource rwDs = new ReadWriteSplitDataSource(
                 master, slave);
         rwDs.getConnection("u", "p");
+
         verify(master).getConnection(eq("u"), eq("p"));
         verify(slave).getConnection(eq("u"), eq("p"));
     }
