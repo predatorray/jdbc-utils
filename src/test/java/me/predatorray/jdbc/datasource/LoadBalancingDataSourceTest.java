@@ -27,7 +27,7 @@ public class LoadBalancingDataSourceTest {
     @Test
     public void testLoadBalancing1() throws Exception {
         RandomGenerator generator = mock(RandomGenerator.class);
-        when(generator.nextInt())
+        when(generator.nextInt(anyInt()))
                 .thenReturn(0)
                 .thenReturn(1);
         DataSource ds1 = mock(DataSource.class);
@@ -45,7 +45,7 @@ public class LoadBalancingDataSourceTest {
     @Test
     public void testLoadBalancing2() throws Exception {
         RandomGenerator generator = mock(RandomGenerator.class);
-        when(generator.nextInt())
+        when(generator.nextInt(anyInt()))
                 .thenReturn(0)
                 .thenReturn(1)
                 .thenReturn(2);

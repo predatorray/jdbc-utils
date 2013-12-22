@@ -2,6 +2,7 @@ package me.predatorray.jdbc.datasource;
 
 import static org.mockito.Mockito.*;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import javax.sql.DataSource;
@@ -62,14 +63,19 @@ public class SubstitutableDataSourceTest {
         verify(substitution).getConnection();
     }
 
-    @Test(expected = SQLException.class, timeout = 1000)
+    @Test(timeout = 1000)
     public void testInfinityLoopDetection() throws SQLException {
         DataSource ds1 = mock(DataSource.class);
-        when(ds1.getConnection()).thenThrow(new SQLException());
+        SQLException ex1 = new SQLException();
+        when(ds1.getConnection()).thenThrow(ex1);
+
         DataSource ds2 = mock(DataSource.class);
-        when(ds2.getConnection()).thenThrow(new SQLException());
+        SQLException ex2 = new SQLException();
+        when(ds2.getConnection()).thenThrow(ex2);
+
         DataSource ds3 = mock(DataSource.class);
-        when(ds3.getConnection()).thenThrow(new SQLException());
+        SQLException ex3 = new SQLException();
+        when(ds3.getConnection()).thenThrow(ex3);
 
         SubstitutableDataSource sDs1 = new SubstitutableDataSource(ds1);
         SubstitutableDataSource sDs2 = new SubstitutableDataSource(ds2);
@@ -78,6 +84,17 @@ public class SubstitutableDataSourceTest {
         sDs2.setSubstitution(sDs3);
         sDs3.setSubstitution(sDs1);
 
-        sDs1.getConnection();
+        try {
+            sDs1.getConnection();
+
+            Assert.fail("SQLException is not thrown by the dataSource" +
+                    ".getConnection()");
+        } catch (SQLException ex) {
+            Assert.assertEquals(ex1, ex);
+        } finally {
+            verify(ds1, times(2)).getConnection();
+            verify(ds2).getConnection();
+            verify(ds3).getConnection();
+        }
     }
 }

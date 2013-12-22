@@ -7,14 +7,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-class ReadWriteSplitConnection implements Connection {
+class ReplicationConnection implements Connection {
 
     private Connection currentConn;
     private final Connection readWriteConn;
     private final Connection readOnlyConn;
 
-    public ReadWriteSplitConnection(Connection readWriteConn,
-                                    Connection readOnlyConn) {
+    public ReplicationConnection(Connection readWriteConn,
+                                 Connection readOnlyConn) {
         Check.argumentIsNotNull(readWriteConn, "connection cannot be null");
         Check.argumentIsNotNull(readOnlyConn, "connection cannot be null");
 

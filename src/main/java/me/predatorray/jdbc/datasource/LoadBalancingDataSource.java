@@ -69,7 +69,7 @@ public class LoadBalancingDataSource extends AbstractDataSource {
     }
 
     private DataSource getDataSourceRandomly() {
-        int randomBorder = randomGenerator.nextInt() % maxBorder;
+        int randomBorder = randomGenerator.nextInt(maxBorder);
         if (normalizedBorderValue == null) { // average
             return dataSources[randomBorder];
         }
@@ -88,8 +88,8 @@ public class LoadBalancingDataSource extends AbstractDataSource {
         private Random random = new Random();
 
         @Override
-        public int nextInt() {
-            return random.nextInt();
+        public int nextInt(int bound) {
+            return random.nextInt(bound);
         }
     }
 }

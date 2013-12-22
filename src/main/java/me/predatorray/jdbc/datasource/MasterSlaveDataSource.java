@@ -28,7 +28,7 @@ public class MasterSlaveDataSource extends AbstractDataSource {
         RoundRobinDataSource roundRobinReads =
                 new RoundRobinDataSource(substitutableDataSources);
         // split read (master) and write (replicas)
-        masterSlaveDataSource = new ReadWriteSplitDataSource(master,
+        masterSlaveDataSource = new ReplicationDataSource(master,
                 roundRobinReads);
     }
 
