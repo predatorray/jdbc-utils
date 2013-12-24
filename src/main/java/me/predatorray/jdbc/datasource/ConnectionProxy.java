@@ -294,7 +294,8 @@ public abstract class ConnectionProxy implements Connection {
     }
 
     @Override
-    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+    public void setNetworkTimeout(Executor executor, int milliseconds)
+            throws SQLException {
         original.setNetworkTimeout(executor, milliseconds);
     }
 
