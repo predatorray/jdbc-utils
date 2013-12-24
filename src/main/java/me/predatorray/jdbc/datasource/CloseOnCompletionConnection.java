@@ -4,28 +4,25 @@ import java.sql.*;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
-/* TODO change the result of statement-related methods
-        returns CloseOnCompletionStatement, PreparedStatement or
-        CallableStatement
-*/
 public class CloseOnCompletionConnection extends ConnectionProxy {
 
     private final Connection originalConnection;
-    private final List<Statement> statementsToBeClosed;
+    private final Queue<Statement> statementsToBeClosed;
 
     public CloseOnCompletionConnection(Connection originalConnection) {
         super(originalConnection);
         this.originalConnection = originalConnection;
-        statementsToBeClosed = Collections.synchronizedList(
-                new LinkedList<Statement>());
+        statementsToBeClosed = new ConcurrentLinkedQueue<Statement>();
     }
 
     @Override
     public Statement createStatement() throws SQLException {
         Statement statement = originalConnection.createStatement();
-        statementsToBeClosed.add(statement);
+        statementsToBeClosed.add(new CloseOnCompletionStatement(statement));
         return statement;
     }
 
@@ -33,7 +30,8 @@ public class CloseOnCompletionConnection extends ConnectionProxy {
     public PreparedStatement prepareStatement(String sql) throws SQLException {
         PreparedStatement preparedStatement = originalConnection
                 .prepareStatement(sql);
-        statementsToBeClosed.add(preparedStatement);
+        statementsToBeClosed.add(new CloseOnCompletionPreparedStatement(
+                preparedStatement));
         return preparedStatement;
     }
 
@@ -41,7 +39,8 @@ public class CloseOnCompletionConnection extends ConnectionProxy {
     public CallableStatement prepareCall(String sql) throws SQLException {
         CallableStatement callableStatement = originalConnection.prepareCall
                 (sql);
-        statementsToBeClosed.add(callableStatement);
+        statementsToBeClosed.add(new CloseOnCompletionCallableStatement(
+                callableStatement));
         return callableStatement;
     }
 
@@ -64,7 +63,7 @@ public class CloseOnCompletionConnection extends ConnectionProxy {
             throws SQLException {
         Statement statement = originalConnection.createStatement
                 (resultSetType, resultSetConcurrency);
-        statementsToBeClosed.add(statement);
+        statementsToBeClosed.add(new CloseOnCompletionStatement(statement));
         return statement;
     }
 
@@ -74,7 +73,8 @@ public class CloseOnCompletionConnection extends ConnectionProxy {
             throws SQLException {
         PreparedStatement preparedStatement = originalConnection
                 .prepareStatement(sql, resultSetType, resultSetConcurrency);
-        statementsToBeClosed.add(preparedStatement);
+        statementsToBeClosed.add(new CloseOnCompletionPreparedStatement(
+                preparedStatement));
         return preparedStatement;
     }
 
@@ -84,7 +84,8 @@ public class CloseOnCompletionConnection extends ConnectionProxy {
             throws SQLException {
         CallableStatement callableStatement = originalConnection.prepareCall
                 (sql, resultSetType, resultSetConcurrency);
-        statementsToBeClosed.add(callableStatement);
+        statementsToBeClosed.add(new CloseOnCompletionCallableStatement(
+                callableStatement));
         return callableStatement;
     }
 
@@ -95,7 +96,7 @@ public class CloseOnCompletionConnection extends ConnectionProxy {
             throws SQLException {
         Statement statement = originalConnection.createStatement
                 (resultSetType, resultSetConcurrency, resultSetHoldability);
-        statementsToBeClosed.add(statement);
+        statementsToBeClosed.add(new CloseOnCompletionStatement(statement));
         return statement;
     }
 
@@ -107,7 +108,8 @@ public class CloseOnCompletionConnection extends ConnectionProxy {
         PreparedStatement preparedStatement = originalConnection
                 .prepareStatement(sql, resultSetType, resultSetConcurrency,
                         resultSetHoldability);
-        statementsToBeClosed.add(preparedStatement);
+        statementsToBeClosed.add(new CloseOnCompletionPreparedStatement(
+                preparedStatement));
         return preparedStatement;
     }
 
@@ -119,7 +121,8 @@ public class CloseOnCompletionConnection extends ConnectionProxy {
         CallableStatement callableStatement = originalConnection.prepareCall
                 (sql, resultSetType, resultSetConcurrency,
                         resultSetHoldability);
-        statementsToBeClosed.add(callableStatement);
+        statementsToBeClosed.add(new CloseOnCompletionCallableStatement(
+                callableStatement));
         return callableStatement;
     }
 
@@ -129,7 +132,8 @@ public class CloseOnCompletionConnection extends ConnectionProxy {
             throws SQLException {
         PreparedStatement preparedStatement = originalConnection
                 .prepareStatement(sql, autoGeneratedKeys);
-        statementsToBeClosed.add(preparedStatement);
+        statementsToBeClosed.add(new CloseOnCompletionPreparedStatement(
+                preparedStatement));
         return preparedStatement;
     }
 
@@ -138,7 +142,8 @@ public class CloseOnCompletionConnection extends ConnectionProxy {
             throws SQLException {
         PreparedStatement preparedStatement = originalConnection
                 .prepareStatement(sql, columnIndexes);
-        statementsToBeClosed.add(preparedStatement);
+        statementsToBeClosed.add(new CloseOnCompletionPreparedStatement(
+                preparedStatement));
         return preparedStatement;
     }
 
@@ -147,7 +152,8 @@ public class CloseOnCompletionConnection extends ConnectionProxy {
             throws SQLException {
         PreparedStatement preparedStatement = originalConnection
                 .prepareStatement(sql, columnNames);
-        statementsToBeClosed.add(preparedStatement);
+        statementsToBeClosed.add(new CloseOnCompletionPreparedStatement(
+                preparedStatement));
         return preparedStatement;
     }
 

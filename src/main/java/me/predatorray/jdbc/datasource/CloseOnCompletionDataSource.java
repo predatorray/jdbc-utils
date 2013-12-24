@@ -8,7 +8,7 @@ import java.sql.SQLException;
 
 public class CloseOnCompletionDataSource extends AbstractDataSource {
 
-    private DataSource dataSource;
+    private final DataSource dataSource;
 
     public CloseOnCompletionDataSource(DataSource dataSource) {
         Check.argumentIsNotNull(dataSource, "dataSource cannot be null");
