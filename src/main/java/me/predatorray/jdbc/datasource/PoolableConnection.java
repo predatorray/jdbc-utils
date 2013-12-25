@@ -16,7 +16,7 @@ public class PoolableConnection extends ConnectionProxy {
     @Override
     public void close() throws SQLException {
         try {
-            connectionPool.returnConnection(this);
+            connectionPool.returnConnection(getOriginal());
         } catch (SQLException ex) {
             throw ex;
         } catch (Exception ex) {

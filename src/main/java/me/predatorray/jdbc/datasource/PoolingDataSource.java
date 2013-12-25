@@ -14,29 +14,46 @@ public class PoolingDataSource implements DataSource {
     private final DataSource originalDataSource;
     private final ConnectionPool connectionPool;
 
-    // TODO pass connectionPool instance enabled
-
-    public PoolingDataSource(DataSource dataSource, int initialSize,
+    public PoolingDataSource(DataSource originalDataSource, int initialSize,
                              int maxSize, boolean defaultAutoCommit,
                              int defaultTransactionIsolation,
+                             boolean autoReadOnly,
                              String defaultCategory) throws SQLException {
-        Check.argumentIsNotNull(dataSource, "dataSource must not be null");
-        this.originalDataSource = dataSource;
+        this(originalDataSource, new QueuedConnectionPool(originalDataSource,
+                initialSize, maxSize, defaultAutoCommit,
+                defaultTransactionIsolation, autoReadOnly, defaultCategory));
+    }
 
-        connectionPool = new QueuedConnectionPool(dataSource, initialSize,
-                maxSize, defaultAutoCommit, defaultTransactionIsolation,
-                defaultCategory);
+    public PoolingDataSource(DataSource originalDataSource,
+                             ConnectionPool connectionPool) {
+        Check.argumentIsNotNull(originalDataSource,
+                "originalDataSource must not be null");
+        Check.argumentIsNotNull(connectionPool,
+                "connectionPool must not be null");
+
+        this.originalDataSource = originalDataSource;
+        this.connectionPool = connectionPool;
     }
 
     @Override
     public Connection getConnection() throws SQLException {
         try {
-            return connectionPool.borrowConnection();
+            return new PoolableConnection(connectionPool.borrowConnection(),
+                    connectionPool);
         } catch (Exception ex) {
             throw new SQLException(ex);
         }
     }
 
+    /**
+     * Invoking this method will not retrieves the connection from the pool.
+     * It will get the connection directly from the data source.
+     * @param username the database user on whose behalf the connection is
+     *                 being made
+     * @param password the user's password
+     * @return a connection from the data source
+     * @exception SQLException if a database access error occurs
+     */
     @Override
     public Connection getConnection(String username, String password)
             throws SQLException {

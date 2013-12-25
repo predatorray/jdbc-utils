@@ -10,21 +10,21 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class QueuedConnectionPool implements ConnectionPool {
+public class QueuedConnectionPool extends AbstractConnectionPool {
 
     private final DataSource dataSource;
     private final int maxSize;
     private final Queue<Connection> idleConnections;
-    private final boolean defaultAutoCommit;
-    private final int defaultTransactionIsolation;
-    private final String defaultCategory;
 
     private final Lock idleConnsLock = new ReentrantLock();
 
-    QueuedConnectionPool(DataSource dataSource, int initialSize, int maxSize,
-                         boolean defaultAutoCommit,
-                         int defaultTransactionIsolation,
-                         String defaultCategory) throws SQLException {
+    public QueuedConnectionPool(DataSource dataSource, int initialSize,
+                                int maxSize, boolean defaultAutoCommit,
+                                int defaultTransactionIsolation,
+                                boolean defaultReadOnly,
+                                String defaultCategory) throws SQLException {
+        super(defaultAutoCommit, defaultTransactionIsolation,
+                defaultReadOnly, defaultCategory);
         Check.argumentIsNotNull(dataSource, "dataSource must not be null");
         Check.argumentIsValid(initialSize >= 0,
                 "initialSize must not be negative");
@@ -36,10 +36,6 @@ public class QueuedConnectionPool implements ConnectionPool {
         this.dataSource = dataSource;
         this.maxSize = maxSize;
         idleConnections = new ConcurrentLinkedQueue<Connection>();
-
-        this.defaultAutoCommit = defaultAutoCommit;
-        this.defaultTransactionIsolation = defaultTransactionIsolation;
-        this.defaultCategory = defaultCategory;
 
         for (int i = 0; i < initialSize; ++i) {
             idleConnections.add(dataSource.getConnection());
@@ -60,6 +56,8 @@ public class QueuedConnectionPool implements ConnectionPool {
 
     @Override
     public void returnConnection(Connection connection) throws Exception {
+        Check.argumentIsNotNull(connection, "connection must not be null");
+
         if (connection.isClosed()) {
             return;
         }
@@ -80,19 +78,6 @@ public class QueuedConnectionPool implements ConnectionPool {
 
         if (drop) {
             drop(connection);
-        }
-    }
-
-    private void reinitialize(Connection connection) throws SQLException {
-        connection.rollback();
-        connection.setAutoCommit(defaultAutoCommit);
-        connection.setTransactionIsolation(defaultTransactionIsolation);
-        connection.setCatalog(defaultCategory);
-    }
-
-    private void drop(Connection connection) throws SQLException {
-        if (connection != null && !connection.isClosed()) {
-            connection.close();
         }
     }
 }
