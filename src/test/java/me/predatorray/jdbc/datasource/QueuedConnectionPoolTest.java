@@ -160,4 +160,23 @@ public class QueuedConnectionPoolTest {
 
         verify(connReturned).close();
     }
+
+    @Test
+    public void testForbidPoolClosedConnection() throws Exception {
+        DataSource ds = mock(DataSource.class);
+        Connection conn = mock(Connection.class);
+        when(ds.getConnection()).thenReturn(conn);
+        Connection closedConnection = mock(Connection.class);
+        when (closedConnection.isClosed()).thenReturn(true);
+
+        final int initialSize = 0;
+        final int maxSize = 1;
+        QueuedConnectionPool pool = new QueuedConnectionPool(ds, initialSize,
+                maxSize, true, Connection.TRANSACTION_READ_UNCOMMITTED, false,
+                null);
+        pool.returnConnection(closedConnection);
+        pool.borrowConnection();
+
+        verify(ds).getConnection();
+    }
 }
