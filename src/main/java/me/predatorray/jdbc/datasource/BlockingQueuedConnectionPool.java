@@ -19,7 +19,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class BlockingQueuedConnectionPool extends AbstractConnectionPool {
 
-    private final DataSource dataSource;
     private final BlockingQueue<Connection> idleConnections;
 
     /**
@@ -52,7 +51,6 @@ public class BlockingQueuedConnectionPool extends AbstractConnectionPool {
         Check.argumentIsNotNull(dataSource, "dataSource must not be null");
         Check.argumentIsValid(size >= 0, "size must not be negative");
 
-        this.dataSource = dataSource;
         idleConnections = new LinkedBlockingQueue<Connection>(size);
 
         for (int i = 0; i < size; ++i) {
