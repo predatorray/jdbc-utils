@@ -69,4 +69,15 @@ public class LoadBalancingDataSourceTest {
         verify(ds1, times(1)).getConnection();
         verify(ds2, times(2)).getConnection();
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructionWithIllegalArg() {
+        final DataSource ds1 = mock(DataSource.class);
+        final DataSource ds2 = mock(DataSource.class);
+        Map<DataSource, Integer> dataSourceAndWeight =
+                new HashMap<DataSource, Integer>(2);
+        dataSourceAndWeight.put(ds1, -1);
+        dataSourceAndWeight.put(ds2, 1);
+        new LoadBalancingDataSource(dataSourceAndWeight);
+    }
 }

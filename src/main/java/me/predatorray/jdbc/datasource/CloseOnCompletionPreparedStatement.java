@@ -39,6 +39,13 @@ public class CloseOnCompletionPreparedStatement
     }
 
     @Override
+    public ResultSet getGeneratedKeys() throws SQLException {
+        ResultSet resultSetToBeClosed = super.getGeneratedKeys();
+        resultSetsToBeClosed.add(resultSetToBeClosed);
+        return resultSetToBeClosed;
+    }
+
+    @Override
     public boolean isCloseOnCompletion() {
         return true;
     }

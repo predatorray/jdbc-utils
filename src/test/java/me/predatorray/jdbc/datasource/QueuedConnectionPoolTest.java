@@ -179,4 +179,36 @@ public class QueuedConnectionPoolTest {
 
         verify(ds).getConnection();
     }
+
+    @Test
+    public void testConnectionBeSetToDefaultState() throws Exception {
+        DataSource ds = mock(DataSource.class);
+        Connection conn = mock(Connection.class);
+        when(ds.getConnection()).thenReturn(conn);
+        when(conn.isClosed()).thenReturn(false);
+
+        final int initialSize = 1;
+        final int maxSize = 1;
+        final boolean defaultAutoCommit = true;
+        final int defaultIsolation = Connection.TRANSACTION_READ_UNCOMMITTED;
+        final boolean defaultReadOnly = true;
+        final String defaultCategory = "category";
+        QueuedConnectionPool pool = new QueuedConnectionPool(ds, initialSize,
+                maxSize, defaultAutoCommit, defaultIsolation, defaultReadOnly,
+                defaultCategory);
+        Connection connFromPool = pool.borrowConnection();
+        connFromPool.setReadOnly(false);
+        connFromPool.setAutoCommit(false);
+        connFromPool.setTransactionIsolation(Connection.TRANSACTION_NONE);
+        connFromPool.setCatalog("foobar");
+        pool.returnConnection(connFromPool);
+
+        pool.borrowConnection();
+
+        verify(conn).rollback();
+        verify(conn).setReadOnly(eq(defaultReadOnly));
+        verify(conn).setAutoCommit(eq(defaultAutoCommit));
+        verify(conn).setCatalog(eq(defaultCategory));
+        verify(conn).setTransactionIsolation(eq(defaultIsolation));
+    }
 }

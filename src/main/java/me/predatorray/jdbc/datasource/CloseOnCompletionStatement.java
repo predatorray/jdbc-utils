@@ -30,6 +30,13 @@ public class CloseOnCompletionStatement extends StatementProxy {
     }
 
     @Override
+    public ResultSet getGeneratedKeys() throws SQLException {
+        ResultSet resultSetToBeClosed = super.getGeneratedKeys();
+        resultSetsToBeClosed.add(resultSetToBeClosed);
+        return resultSetToBeClosed;
+    }
+
+    @Override
     public boolean isCloseOnCompletion() {
         return true;
     }

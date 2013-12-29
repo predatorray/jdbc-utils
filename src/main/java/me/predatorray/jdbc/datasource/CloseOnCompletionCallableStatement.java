@@ -18,6 +18,13 @@ public class CloseOnCompletionCallableStatement
     }
 
     @Override
+    public ResultSet executeQuery() throws SQLException {
+        ResultSet resultSetToBeClosed = super.executeQuery();
+        resultSetsToBeClosed.add(resultSetToBeClosed);
+        return resultSetToBeClosed;
+    }
+
+    @Override
     public ResultSet executeQuery(String sql) throws SQLException {
         ResultSet resultSetToBeClosed = super.executeQuery(sql);
         resultSetsToBeClosed.add(resultSetToBeClosed);
@@ -27,6 +34,13 @@ public class CloseOnCompletionCallableStatement
     @Override
     public ResultSet getResultSet() throws SQLException {
         ResultSet resultSetToBeClosed = super.getResultSet();
+        resultSetsToBeClosed.add(resultSetToBeClosed);
+        return resultSetToBeClosed;
+    }
+
+    @Override
+    public ResultSet getGeneratedKeys() throws SQLException {
+        ResultSet resultSetToBeClosed = super.getGeneratedKeys();
         resultSetsToBeClosed.add(resultSetToBeClosed);
         return resultSetToBeClosed;
     }
