@@ -523,7 +523,8 @@ public class JdbcTemplate {
         try {
             connection.setReadOnly(false);
 
-            PreparedStatement ps = connection.prepareStatement(sql);
+            PreparedStatement ps = connection.prepareStatement(sql,
+                    Statement.RETURN_GENERATED_KEYS);
             return new BatchUpdater(ps);
         } catch (SQLException ex) {
             rollbackConnection(connection);
