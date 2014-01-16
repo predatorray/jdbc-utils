@@ -12,24 +12,14 @@ import java.util.Collections;
 
 public class RoundRobinDataSourceTest {
 
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithNullArg1() {
-        new RoundRobinDataSource((Collection<? extends DataSource >) null);
+    @Test(expected = NullPointerException.class)
+    public void testConstructorWithNullArg() {
+        new RoundRobinDataSource(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithNullArg2() {
-        new RoundRobinDataSource((DataSource[]) null);
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithInvalidArg1() {
+    public void testConstructorWithInvalidArg() {
         new RoundRobinDataSource(Collections.<DataSource>emptyList());
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testConstructorWithInvalidArg2() {
-        new RoundRobinDataSource(new DataSource[0]);
     }
 
     @Test
