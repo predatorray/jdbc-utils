@@ -93,4 +93,18 @@ class ExtendedResultSetImpl extends ResultSetWrapper
         double value = getDouble(columnLabel);
         return wasNull() ? null : value;
     }
+
+    @Override
+    public <E extends Enum<E>> E getEnum(int columnIndex, Class<E> enumClz)
+            throws SQLException {
+        String enumValue = getString(columnIndex);
+        return (enumValue == null) ? null : Enum.valueOf(enumClz, enumValue);
+    }
+
+    @Override
+    public <E extends Enum<E>> E getEnum(String columnLabel, Class<E> enumClz)
+            throws SQLException {
+        String enumValue = getString(columnLabel);
+        return (enumValue == null) ? null : Enum.valueOf(enumClz, enumValue);
+    }
 }

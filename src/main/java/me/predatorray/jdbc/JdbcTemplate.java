@@ -46,6 +46,7 @@ public class JdbcTemplate {
 
         Connection connection = getConnection();
         try {
+            connection.setReadOnly(true);
             Statement stmt = connection.createStatement();
             try {
                 ResultSet rs = stmt.executeQuery(sql);
@@ -171,6 +172,7 @@ public class JdbcTemplate {
 
         Connection connection = getConnection();
         try {
+            connection.setReadOnly(true);
             PreparedStatement ps = connection.prepareStatement(sql);
             try {
                 setter.setPreparedStatement(ps);
@@ -204,6 +206,7 @@ public class JdbcTemplate {
 
         Connection connection = getConnection();
         try {
+            connection.setReadOnly(true);
             Statement stmt = connection.createStatement();
             try {
                 ResultSet rs = stmt.executeQuery(sql);
