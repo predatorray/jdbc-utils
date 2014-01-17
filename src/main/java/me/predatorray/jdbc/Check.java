@@ -16,4 +16,10 @@ public final class Check {
             throw new IllegalArgumentException(msg);
         }
     }
+
+    public static void argumentIsPositive(int number, String msg) {
+        if (number <= 0) {
+            throw new IllegalArgumentException(msg);
+        }
+    }
 }

@@ -5,9 +5,6 @@ import me.predatorray.jdbc.Check;
 import javax.sql.DataSource;
 import java.util.*;
 
-/**
- * Copyright (c) 2013 Ray <predator.ray@gmail.com>
- */
 public class SubstitutableDataSourceCycle
         implements Collection<SubstitutableDataSource> {
 
@@ -96,6 +93,5 @@ public class SubstitutableDataSourceCycle
     @Override
     public void clear() {
         throw new UnsupportedOperationException();
-
     }
 }
