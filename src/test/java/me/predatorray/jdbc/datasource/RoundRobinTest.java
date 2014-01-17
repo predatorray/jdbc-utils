@@ -23,4 +23,12 @@ public class RoundRobinTest {
         Assert.assertEquals(2, roundRobin.next());
         Assert.assertEquals(0, roundRobin.next());
     }
+
+    @Test
+    public void testRobinRobinOfOnlyOneNumber() {
+        RoundRobin roundRobin = new RoundRobin(1);
+        Assert.assertEquals(0, roundRobin.next());
+        Assert.assertEquals(0, roundRobin.next());
+
+    }
 }
