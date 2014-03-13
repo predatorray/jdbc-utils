@@ -1,9 +1,9 @@
 jdbc-utils
 ==========
 
-jdbc-utils is a simple collection of utilities for JDBC API, which simplifies the use of native JDBC.
+**jdbc-utils** is a simple collection of utilities for JDBC API, which simplifies the use of native JDBC.
 
-## Examples
+## Introduction
 
 ### JdbcTemplate
 
@@ -50,3 +50,19 @@ Employee bob = jdbcTemplate.updateOne("UPDATE employees SET firstName=? WHERE em
 ```
 
 After the `UPDATE` is successfully executed, the updated entity will be returned.
+
+### A collection of data sources
+
+There're many useful data source classes under the `me.predatorray.jdbc.datasource` package. All those data sources follow the Decorator pattern, which means that they share the same interface - `DataSource` and are able to combine with each other.
+
+#### CloseOnCompletionDataSource
+
+All connections constructed by a `CloseOnCompletionDataSource` instance will be closed sequentially as soon as the data source has been closed. Therefore, you don't need to close a `Statement`, `PreparedStatement` or other kinds of statement instances manually. All these dirty work will be done by the datasource instance.
+
+#### LoadBalancingDataSource
+
+A `LoadBalancingDataSource` instance balances the traffic coming from the upper layer, redirecting them to a data source randomly or with any other strategies like round-robin according to the `LoadBalancingStrategy`.
+
+#### ReplicationDataSource & MasterSlaveDataSource
+
+The master-slave is a simple and common database topology, which is used when we have few writes and many reads in our applications. A `ReplicationDataSource` instance returns a connection to the master on `connection.setReadOnly(false);` or one to the slave on `connection.setReadOnly(true)`. When we have one master and multiple slaves, it is a good choice to join those slaves into a `LoadBalancingDataSource` with a `RoundRobin` strategy or just use `MasterSlaveDataSource` instead.
