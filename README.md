@@ -45,7 +45,7 @@ List<Employee> tenEmployees = jdbcTemplate.query("SELECT * FROM employees LIMIT 
 And this snippet show how to update an employee entity to the database.
 
 ```
-Employee bob = jdbcTemplate.updateOne("UPDATE employees SET firstName=? WHERE empNo=?;", Arrays.asList("Bob", 1001),
+Employee bob = jdbcTemplate.updateOne("UPDATE employees SET firstName=? WHERE emp_no=?;", Arrays.asList("Bob", 1001),
     employeeDataMapper);
 ```
 
