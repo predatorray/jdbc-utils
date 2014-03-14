@@ -1,4 +1,4 @@
-jdbc-utils [![Build Status](https://travis-ci.org/predatorray/jdbc-utils.png?branch=master)](https://travis-ci.org/predatorray/jdbc-utils)
+jdbc-utils [![Build Status](https://travis-ci.org/predatorray/jdbc-utils.png?branch=master)](https://travis-ci.org/predatorray/jdbc-utils) [![Coverage Status](https://coveralls.io/repos/predatorray/jdbc-utils/badge.png)](https://coveralls.io/r/predatorray/jdbc-utils)
 ==========
 
 **jdbc-utils** is a simple collection of utilities for JDBC API, which simplifies the use of native JDBC.
