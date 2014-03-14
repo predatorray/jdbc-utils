@@ -3,70 +3,112 @@ package me.predatorray.jdbc.datasource;
 import static org.mockito.Mockito.*;
 
 import org.junit.Test;
+import org.mockito.InOrder;
 
 import javax.sql.DataSource;
+import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collection;
+import java.util.Collections;
 
-/**
- * Copyright (c) 2013 Ray <predator.ray@gmail.com>
- */
 public class LoadBalancingDataSourceTest {
 
-    @Test
-    public void testWrapperCall() throws Exception {
-        DataSource ds = mock(DataSource.class);
-        LoadBalancingDataSource lDs = new LoadBalancingDataSource(
-                Arrays.asList(ds));
-        lDs.getConnection();
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorWithNullDataSourceCollection() {
+        LoadBalancingStrategy strategy = mock(LoadBalancingStrategy.class);
+        new LoadBalancingDataSource(null, strategy);
+    }
 
-        verify(ds).getConnection();
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorWithEmptyDataSourceCollection() {
+        LoadBalancingStrategy strategy = mock(LoadBalancingStrategy.class);
+        new LoadBalancingDataSource(Collections.<DataSource>emptyList(),
+                strategy);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testConstructorWithNullLoadBalancingStrategy() {
+        DataSource dataSource = mock(DataSource.class);
+        new LoadBalancingDataSource(Collections.singleton(dataSource), null);
     }
 
     @Test
-    public void testLoadBalancing1() throws Exception {
-        RandomGenerator generator = mock(RandomGenerator.class);
-        when(generator.nextInt(anyInt()))
-                .thenReturn(0)
-                .thenReturn(1);
-        DataSource ds1 = mock(DataSource.class);
-        DataSource ds2 = mock(DataSource.class);
-        LoadBalancingDataSource lDs = new LoadBalancingDataSource(
-                Arrays.asList(ds1, ds2));
-        lDs.setRandomGenerator(generator);
-        lDs.getConnection();
-        lDs.getConnection();
+    public void testGetDataSourceWithUsernameAndPassword1()
+            throws SQLException {
+        DataSource dataSource1 = mock(DataSource.class);
+        DataSource dataSource2 = mock(DataSource.class);
+        Collection<DataSource> dataSources = Arrays.asList(dataSource1,
+                dataSource2);
+        LoadBalancingStrategy strategy = mock(LoadBalancingStrategy.class);
+        when(strategy.next()).thenReturn(0).thenReturn(1);
+        LoadBalancingDataSource loadBalancingDataSource =
+                new LoadBalancingDataSource(dataSources, strategy);
+        String user = "u";
+        String pass = "p";
 
-        verify(ds1).getConnection();
-        verify(ds2).getConnection();
+        loadBalancingDataSource.getConnection(user, pass);
+
+        verify(strategy).next();
+        verify(dataSource1).getConnection(eq(user), eq(pass));
     }
 
     @Test
-    public void testLoadBalancing2() throws Exception {
-        RandomGenerator generator = mock(RandomGenerator.class);
-        when(generator.nextInt(anyInt()))
-                .thenReturn(0)
-                .thenReturn(1)
-                .thenReturn(2);
+    public void testGetDataSourceWithUsernameAndPassword2()
+            throws SQLException {
+        DataSource dataSource1 = mock(DataSource.class);
+        DataSource dataSource2 = mock(DataSource.class);
+        Collection<DataSource> dataSources = Arrays.asList(dataSource1,
+                dataSource2);
+        LoadBalancingStrategy strategy = mock(LoadBalancingStrategy.class);
+        when(strategy.next()).thenReturn(0).thenReturn(1);
+        LoadBalancingDataSource loadBalancingDataSource =
+                new LoadBalancingDataSource(dataSources, strategy);
+        String user = "u";
+        String pass = "p";
 
-        final DataSource ds1 = mock(DataSource.class);
-        final DataSource ds2 = mock(DataSource.class);
-        LoadBalancingDataSource lDs = new LoadBalancingDataSource(
-                new HashMap<DataSource, Integer>(2) {
+        loadBalancingDataSource.getConnection(user, pass);
+        loadBalancingDataSource.getConnection(user, pass);
 
-                    {
-                        this.put(ds1, 1);
-                        this.put(ds2, 2);
-                    }
-                });
-        lDs.setRandomGenerator(generator);
+        verify(strategy, times(2)).next();
+        InOrder inOrder = inOrder(dataSource1, dataSource2);
+        inOrder.verify(dataSource1).getConnection(eq(user), eq(pass));
+        inOrder.verify(dataSource2).getConnection(eq(user), eq(pass));
+    }
 
-        lDs.getConnection();
-        lDs.getConnection();
-        lDs.getConnection();
+    @Test
+    public void testGetDataSource1() throws SQLException {
+        DataSource dataSource1 = mock(DataSource.class);
+        DataSource dataSource2 = mock(DataSource.class);
+        Collection<DataSource> dataSources = Arrays.asList(dataSource1,
+                dataSource2);
+        LoadBalancingStrategy strategy = mock(LoadBalancingStrategy.class);
+        when(strategy.next()).thenReturn(0).thenReturn(1);
+        LoadBalancingDataSource loadBalancingDataSource =
+                new LoadBalancingDataSource(dataSources, strategy);
 
-        verify(ds1, times(1)).getConnection();
-        verify(ds2, times(2)).getConnection();
+        loadBalancingDataSource.getConnection();
+
+        verify(strategy).next();
+        verify(dataSource1).getConnection();
+    }
+
+    @Test
+    public void testGetDataSource2() throws SQLException {
+        DataSource dataSource1 = mock(DataSource.class);
+        DataSource dataSource2 = mock(DataSource.class);
+        Collection<DataSource> dataSources = Arrays.asList(dataSource1,
+                dataSource2);
+        LoadBalancingStrategy strategy = mock(LoadBalancingStrategy.class);
+        when(strategy.next()).thenReturn(0).thenReturn(1);
+        LoadBalancingDataSource loadBalancingDataSource =
+                new LoadBalancingDataSource(dataSources, strategy);
+
+        loadBalancingDataSource.getConnection();
+        loadBalancingDataSource.getConnection();
+
+        verify(strategy, times(2)).next();
+        InOrder inOrder = inOrder(dataSource1, dataSource2);
+        inOrder.verify(dataSource1).getConnection();
+        inOrder.verify(dataSource2).getConnection();
     }
 }

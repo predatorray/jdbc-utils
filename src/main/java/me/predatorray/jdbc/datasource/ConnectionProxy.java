@@ -294,7 +294,8 @@ public abstract class ConnectionProxy implements Connection {
     }
 
     @Override
-    public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+    public void setNetworkTimeout(Executor executor, int milliseconds)
+            throws SQLException {
         original.setNetworkTimeout(executor, milliseconds);
     }
 
@@ -306,11 +307,22 @@ public abstract class ConnectionProxy implements Connection {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T unwrap(Class<T> iface) throws SQLException {
+        if (iface == null) {
+            throw new SQLException("iface must not be null");
+        }
+        if (!iface.isInstance(original)) {
+            throw new SQLException(String.format(
+                    "no object found that implements the interface: %s",
+                    iface));
+        }
         return (T) original;
     }
 
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return original.isWrapperFor(iface);
+        if (iface == null) {
+            throw new SQLException("iface must not be null");
+        }
+        return iface.isInstance(original);
     }
 }

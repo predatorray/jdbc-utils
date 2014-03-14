@@ -5,6 +5,7 @@ import me.predatorray.jdbc.Check;
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.logging.Logger;
 
 public abstract class AbstractDataSource implements DataSource {
@@ -49,7 +50,7 @@ public abstract class AbstractDataSource implements DataSource {
     }
 
     @Override
-    public Logger getParentLogger() {
+    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         return Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
     }
 }

@@ -30,8 +30,46 @@ public class JdbcTemplate {
      * @throws java.lang.IllegalArgumentException dataSource is null
      */
     public JdbcTemplate(DataSource dataSource) {
-        Check.argumentIsNotNull(dataSource, "dataSource must be null");
+        Check.argumentIsNotNull(dataSource, "dataSource must not be null");
         this.dataSource = dataSource;
+    }
+
+    public <E> List<E> query(String sql, DataMapper<E> dataMapper)
+            throws DataAccessException {
+        return query(sql, dataMapper, new LinkedList<E>());
+    }
+
+    public <E> List<E> query(String sql, DataMapper<E> dataMapper,
+                       List<E> resultList) throws DataAccessException {
+        Check.argumentIsNotNull(dataMapper, "dataMapper must not be null");
+        Check.argumentIsNotNull(resultList, "resultList must not be null");
+
+        Connection connection = getConnection();
+        try {
+            connection.setReadOnly(true);
+            Statement stmt = connection.createStatement();
+            try {
+                ResultSet rs = stmt.executeQuery(sql);
+                try {
+                    while (rs.next()) {
+                        E entity = dataMapper.map(
+                                new ExtendedResultSetImpl(rs));
+                        resultList.add(entity);
+                    }
+                } finally {
+                    rs.close();
+                }
+            } finally {
+                stmt.close();
+            }
+
+            return resultList;
+        } catch (SQLException ex) {
+            rollbackConnection(connection);
+            throw new DataAccessException(ex);
+        } finally {
+            closeConnection(connection);
+        }
     }
 
     /**
@@ -134,18 +172,57 @@ public class JdbcTemplate {
 
         Connection connection = getConnection();
         try {
+            connection.setReadOnly(true);
             PreparedStatement ps = connection.prepareStatement(sql);
-            setter.setPreparedStatement(ps);
+            try {
+                setter.setPreparedStatement(ps);
 
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                E entity = dataMapper.map(new ExtendedResultSetImpl(rs));
-                resultList.add(entity);
+                ResultSet rs = ps.executeQuery();
+                try {
+                    while (rs.next()) {
+                        E entity = dataMapper.map(
+                                new ExtendedResultSetImpl(rs));
+                        resultList.add(entity);
+                    }
+                } finally {
+                    rs.close();
+                }
+            } finally {
+                ps.close();
             }
-            rs.close();
 
             return resultList;
         } catch (SQLException ex) {
+            rollbackConnection(connection);
+            throw new DataAccessException(ex);
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
+    public <E> E queryOne(String sql, DataMapper<E> dataMapper)
+            throws DataAccessException {
+        Check.argumentIsNotNull(dataMapper, "dataMapper must not be null");
+
+        Connection connection = getConnection();
+        try {
+            connection.setReadOnly(true);
+            Statement stmt = connection.createStatement();
+            try {
+                ResultSet rs = stmt.executeQuery(sql);
+
+                try {
+                    return (rs.next())
+                            ? dataMapper.map(new ExtendedResultSetImpl(rs))
+                            : null;
+                } finally {
+                    rs.close();
+                }
+            } finally {
+                stmt.close();
+            }
+        } catch (SQLException ex) {
+            rollbackConnection(connection);
             throw new DataAccessException(ex);
         } finally {
             closeConnection(connection);
@@ -203,14 +280,22 @@ public class JdbcTemplate {
             connection.setReadOnly(true);
 
             PreparedStatement ps = connection.prepareStatement(sql);
-            setter.setPreparedStatement(ps);
+            try {
+                setter.setPreparedStatement(ps);
 
-            ResultSet rs = ps.executeQuery();
-            E result = (rs.next())
-                    ? dataMapper.map(new ExtendedResultSetImpl(rs)) : null;
-            rs.close();
-            return result;
+                ResultSet rs = ps.executeQuery();
+                try {
+                    return (rs.next())
+                            ? dataMapper.map(new ExtendedResultSetImpl(rs))
+                            : null;
+                } finally {
+                    rs.close();
+                }
+            } finally {
+                ps.close();
+            }
         } catch (SQLException ex) {
+            rollbackConnection(connection);
             throw new DataAccessException(ex);
         } finally {
             closeConnection(connection);
@@ -257,10 +342,15 @@ public class JdbcTemplate {
             connection.setReadOnly(false);
 
             PreparedStatement ps = connection.prepareStatement(sql);
-            setter.setPreparedStatement(ps);
+            try {
+                setter.setPreparedStatement(ps);
 
-            return ps.executeUpdate();
+                return ps.executeUpdate();
+            } finally {
+                ps.close();
+            }
         } catch (SQLException ex) {
+            rollbackConnection(connection);
             throw new DataAccessException(ex);
         } finally {
             closeConnection(connection);
@@ -318,19 +408,24 @@ public class JdbcTemplate {
 
             PreparedStatement ps = connection.prepareStatement(sql,
                     Statement.RETURN_GENERATED_KEYS);
-            setter.setPreparedStatement(ps);
+            try {
+                setter.setPreparedStatement(ps);
 
-            int row = ps.executeUpdate();
-            List<K> keyList = new ArrayList<K>(row);
+                int row = ps.executeUpdate();
+                List<K> keyList = new ArrayList<K>(row);
 
-            ResultSet rs = ps.getGeneratedKeys();
-            while (rs.next()) {
-                K key = keyMapper.map(new ExtendedResultSetImpl(rs));
-                keyList.add(key);
+                ResultSet rs = ps.getGeneratedKeys();
+                while (rs.next()) {
+                    K key = keyMapper.map(new ExtendedResultSetImpl(rs));
+                    keyList.add(key);
+                }
+                rs.close();
+                return keyList;
+            } finally {
+                ps.close();
             }
-            rs.close();
-            return keyList;
         } catch (SQLException ex) {
+            rollbackConnection(connection);
             throw new DataAccessException(ex);
         } finally {
             closeConnection(connection);
@@ -396,16 +491,21 @@ public class JdbcTemplate {
 
             PreparedStatement ps = connection.prepareStatement(sql,
                     Statement.RETURN_GENERATED_KEYS);
-            setter.setPreparedStatement(ps);
+            try {
+                setter.setPreparedStatement(ps);
 
-            ps.executeUpdate();
+                ps.executeUpdate();
 
-            ResultSet rs = ps.getGeneratedKeys();
-            K result = (rs.next())
-                    ? keyMapper.map(new ExtendedResultSetImpl(rs)) : null;
-            rs.close();
-            return result;
+                ResultSet rs = ps.getGeneratedKeys();
+                K result = (rs.next())
+                        ? keyMapper.map(new ExtendedResultSetImpl(rs)) : null;
+                rs.close();
+                return result;
+            } finally {
+                ps.close();
+            }
         } catch (SQLException ex) {
+            rollbackConnection(connection);
             throw new DataAccessException(ex);
         } finally {
             closeConnection(connection);
@@ -426,9 +526,11 @@ public class JdbcTemplate {
         try {
             connection.setReadOnly(false);
 
-            PreparedStatement ps = connection.prepareStatement(sql);
+            PreparedStatement ps = connection.prepareStatement(sql,
+                    Statement.RETURN_GENERATED_KEYS);
             return new BatchUpdater(ps);
         } catch (SQLException ex) {
+            rollbackConnection(connection);
             throw new DataAccessException(ex);
         } finally {
             closeConnection(connection);
@@ -450,8 +552,8 @@ public class JdbcTemplate {
     }
 
     /**
-     * the tear down method used to close an connection as soon as the task has
-     * either been successfully executed or failed with an exception.
+     * the tear down method is used to close a connection as soon as the task
+     * has either been successfully executed or failed with an exception.
      * @param connection the connection to be closed
      * @throws DataAccessException if SQLException is thrown during the close
      * phrase.
@@ -463,6 +565,27 @@ public class JdbcTemplate {
         } catch (SQLException ex) {
             throw new DataAccessException(
                     "failed to close the connection", ex);
+        }
+    }
+
+    /**
+     * this method is used to rollback a connection if SQLException is thrown
+     * during the execution. But when the auto-commit is not disabled
+     * (by default), the <code>connection.rollback()</code> will not be
+     * executed.
+     * @param connection the connection to rollback
+     * @throws DataAccessException if SQLException is thrown during the
+     * rollback
+     */
+    protected void rollbackConnection(Connection connection)
+            throws DataAccessException {
+        try {
+            if (!connection.getAutoCommit()) {
+                connection.rollback();
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(
+                    "failed to rollback the connection", ex);
         }
     }
 }

@@ -196,7 +196,7 @@ public interface ExtendedResultSet extends ResultSet {
 
     /**
      * Retrieves the value of the designated column in the current row
-     * of this <code>Float</code> object as
+     * of this <code>ResultSet</code> object as
      * a <code>Double</code> in the Java programming language.
      * @param columnLabel the label for the column specified with the SQL AS
      *                    clause.  If the SQL AS clause was not specified, then
@@ -208,4 +208,38 @@ public interface ExtendedResultSet extends ResultSet {
      *                       is called on a closed result set
      */
     Double getNullableDouble(String columnLabel) throws SQLException;
+
+    /**
+     * Retrieves the value of the designated column in the current row
+     * of this <code>ResultSet</code> object as
+     * a <code>Enum</code> in the Java programming language.
+     * @param columnIndex the first column is 1, the second is 2, ...
+     * @param enumClz the class of the enum
+     * @param <E> the type of the enum
+     * @return the column value; if the value is SQL <code>NULL</code>, the
+     *         value returned is <code>null</code>
+     * @throws SQLException if the columnIndex is not valid;
+     *                       if a database access error occurs or this method
+     *                       is called on a closed result set
+     */
+    <E extends Enum<E>> E getEnum(int columnIndex, Class<E> enumClz)
+            throws SQLException;
+
+    /**
+     * Retrieves the value of the designated column in the current row
+     * of this <code>ResultSet</code> object as
+     * a <code>Enum</code> in the Java programming language.
+     * @param columnLabel the label for the column specified with the SQL AS
+     *                    clause.  If the SQL AS clause was not specified, then
+     *                    the label is the name of the column
+     * @param enumClz the class of the enum
+     * @param <E> the type of the enum
+     * @return the column value; if the value is SQL <code>NULL</code>, the
+     *         value returned is <code>null</code>
+     * @throws SQLException if the columnIndex is not valid;
+     *                       if a database access error occurs or this method
+     *                       is called on a closed result set
+     */
+    <E extends Enum<E>> E getEnum(String columnLabel, Class<E> enumClz)
+            throws SQLException;
 }
