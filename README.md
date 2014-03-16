@@ -12,9 +12,7 @@ When using native JDBC API, we have to get a connection from a data source first
 A `JdbcTemplate` instance, which is constructed with a data source instance, is a simple utility used to interact with the data source to retrieve or update some entity objects. You don't need to use JDBC directly. Instead, an instance of `JdbcTemplate` and a `DataMapper<T>` instance of the entity type is all you need.
 
 ```
-...
 JdbcTemplate jdbcTemplate = new JdbcTemplate(employeeDataSource); // construct a jdbcTemplate with a data source
-...
 ```
 
 A `DataMapper<T>` maps a `ExtendedResultSet` instance (which extends the function of the JDBC `ResultSet`) to your entity (say, Employee).
