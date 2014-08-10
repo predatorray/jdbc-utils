@@ -1,7 +1,5 @@
 package me.predatorray.jdbc;
 
-import me.predatorray.jdbc.datasource.CloseOnCompletionConnection;
-
 import javax.sql.DataSource;
 import java.sql.*;
 import java.util.ArrayList;
@@ -23,6 +21,7 @@ import java.util.List;
 public class JdbcTemplate {
 
     private final DataSource dataSource;
+    private final ConnectionManager connectionManager;
 
     /**
      * construct a JdbcTemplate instance from an existing dataSource object
@@ -30,8 +29,14 @@ public class JdbcTemplate {
      * @throws java.lang.IllegalArgumentException dataSource is null
      */
     public JdbcTemplate(DataSource dataSource) {
+        this(dataSource, new DefaultConnectionManager());
+    }
+
+    public JdbcTemplate(DataSource dataSource, ConnectionManager connectionManager) {
         Check.argumentIsNotNull(dataSource, "dataSource must not be null");
+        Check.argumentIsNotNull(connectionManager, "connectionManager must not be null");
         this.dataSource = dataSource;
+        this.connectionManager = connectionManager;
     }
 
     public <E> List<E> query(String sql, DataMapper<E> dataMapper)
@@ -542,13 +547,7 @@ public class JdbcTemplate {
      * @return a connection from the data source.
      */
     protected Connection getConnection() {
-        try {
-            Connection connection = dataSource.getConnection();
-            return new CloseOnCompletionConnection(connection);
-        } catch (SQLException ex) {
-            throw new DataAccessException(
-                    "failed to get a connection from the data source", ex);
-        }
+        return connectionManager.getConnection(dataSource);
     }
 
     /**
@@ -560,12 +559,7 @@ public class JdbcTemplate {
      */
     protected void closeConnection(Connection connection)
             throws DataAccessException {
-        try {
-            connection.close();
-        } catch (SQLException ex) {
-            throw new DataAccessException(
-                    "failed to close the connection", ex);
-        }
+        connectionManager.closeConnection(connection);
     }
 
     /**
@@ -579,13 +573,6 @@ public class JdbcTemplate {
      */
     protected void rollbackConnection(Connection connection)
             throws DataAccessException {
-        try {
-            if (!connection.getAutoCommit()) {
-                connection.rollback();
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException(
-                    "failed to rollback the connection", ex);
-        }
+        connectionManager.rollbackConnection(connection);
     }
 }

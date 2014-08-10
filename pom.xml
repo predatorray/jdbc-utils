@@ -15,6 +15,15 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.0</version>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>2.2.0</version>
@@ -24,13 +33,16 @@
                 <artifactId>cobertura-maven-plugin</artifactId>
                 <version>2.6</version>
                 <configuration>
+                    <check/>
                     <instrumentation>
                         <excludes>
                             <exclude>me/predatorray/jdbc/**/*Proxy.class</exclude>
+                            <exclude>me/predatorray/jdbc/**/*Wrapper.class</exclude>
                         </excludes>
                     </instrumentation>
                     <formats>
                         <format>xml</format>
+                        <format>html</format>
                     </formats>
                 </configuration>
             </plugin>
@@ -43,12 +55,6 @@
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>cobertura-maven-plugin</artifactId>
                 <version>2.6</version>
-                <configuration>
-                    <formats>
-                        <format>html</format>
-                        <format>xml</format>
-                    </formats>
-                </configuration>
             </plugin>
         </plugins>
     </reporting>
@@ -70,6 +76,12 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>1.9.5</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.180</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

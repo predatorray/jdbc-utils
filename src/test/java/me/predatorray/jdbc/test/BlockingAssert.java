@@ -23,7 +23,7 @@ public final class BlockingAssert {
         } catch (ExecutionException ex) {
             throw (msg == null)
                     ? new AssertionError(ex.getCause())
-                    : new AssertionError(msg, ex.getCause());
+                    : new AssertionError(msg);
         } catch (TimeoutException ex) {
             blocked = true;
         } finally {

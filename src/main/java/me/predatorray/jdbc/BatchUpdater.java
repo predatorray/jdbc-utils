@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class BatchUpdater {
@@ -16,6 +17,10 @@ public class BatchUpdater {
         this.ps = ps;
     }
 
+    public BatchUpdater addBatch(Object ...parameters) {
+        return addBatch(Arrays.asList(parameters));
+    }
+
     public BatchUpdater addBatch(List<?> parameters)
             throws DataAccessException {
         Check.argumentIsNotNull(parameters, "parameters cannot be null");
@@ -23,7 +28,6 @@ public class BatchUpdater {
         PreparedStatementSetter setter =
                 new SimplePreparedStatementSetter(parameters);
         return addBatch(setter);
-
     }
 
     public BatchUpdater addBatch(PreparedStatementSetter setter)
